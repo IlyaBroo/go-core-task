@@ -3,21 +3,24 @@ package main
 import (
 	"fmt"
 	"math/rand"
-	"time"
 )
 
 func main() {
 	randomNumbers := make(chan int)
-	go func() {
-		for {
-			num := rand.Intn(100)
-			randomNumbers <- num
-			time.Sleep(1 * time.Second)
-		}
-	}()
-
+	go GiveRandomNumbers(256, 8, randomNumbers)
 	for {
-		num := <-randomNumbers
+		num, ok := <-randomNumbers
+		if !ok {
+			break
+		}
 		fmt.Println(num)
 	}
+}
+
+func GiveRandomNumbers(rang, num int, ch chan int) chan int {
+	for i := 0; i < num; i++ {
+		ch <- rand.Intn(rang)
+	}
+	close(ch)
+	return ch
 }
